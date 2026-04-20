@@ -42,6 +42,7 @@ export const messagesApi = {
     message: string;
     type?: string;
     group_ids?: number[];
+    sub_group_ids?: number[];
     employee_ids?: number[];
     phone_numbers?: string[];
   }) => api<{ message_id: number; recipients: number; dispatched: number; balance: number; message: string }>(
@@ -50,6 +51,7 @@ export const messagesApi = {
   balance: () => api<{ balance: number }>("/messages/balance"),
   resolveRecipients: (data: {
     group_ids?: number[];
+    sub_group_ids?: number[];
     employee_ids?: number[];
     phone_numbers?: string[];
   }) => api<{ count: number; phones: string[] }>("/messages/resolve", { method: "POST", body: JSON.stringify(data) }),

@@ -769,7 +769,7 @@ function FollowupPanel({ incidents, onOpen, onClose, onNotify }: any) {
 }
 
 /* ─── helpers ─── */
-function Fld({ label, value, onChange, placeholder, type = "text" }: any) {
+function Fld({ label, value, onChange, placeholder, type = "text" }: { label: string; value: any; onChange: (v: string) => void; placeholder?: string; type?: string }) {
   return (
     <div>
       <label style={{ fontSize: 11, fontWeight: 700, color: "var(--tx2)", display: "block", marginBottom: 5 }}>{label}</label>
@@ -779,7 +779,7 @@ function Fld({ label, value, onChange, placeholder, type = "text" }: any) {
   );
 }
 
-function Sel({ label, value, onChange, options, labels }: any) {
+function Sel({ label, value, onChange, options, labels }: { label: string; value: any; onChange: (v: string) => void; options: string[]; labels?: string[] }) {
   return (
     <div>
       <label style={{ fontSize: 11, fontWeight: 700, color: "var(--tx2)", display: "block", marginBottom: 5 }}>{label}</label>

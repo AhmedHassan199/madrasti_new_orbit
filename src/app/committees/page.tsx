@@ -79,7 +79,7 @@ export default function CommitteesPage() {
 
   /* Computed progress */
   const comms = useMemo(() =>
-    committees.map(c => ({ ...c, progress: c.tasks.length ? Math.round(c.tasks.filter(t => t.done).length / c.tasks.length * 100) : 0 })),
+    committees.map((c: any) => ({ ...c, progress: c.tasks.length ? Math.round(c.tasks.filter((t: any) => t.done).length / c.tasks.length * 100) : 0 })),
   [committees]);
 
   const listed = useMemo(() => {
@@ -91,7 +91,7 @@ export default function CommitteesPage() {
 
   const active = useMemo(() => comms.find(c => c.id === activeId) || comms[0], [comms, activeId]);
 
-  const totalMembers = useMemo(() => [...new Set(comms.flatMap(c => c.members.map(m => m.id)))].length, [comms]);
+  const totalMembers = useMemo(() => [...new Set(comms.flatMap((c: any) => c.members.map((m: any) => m.id)))].length, [comms]);
   const totalTasks   = useMemo(() => comms.reduce((a, c) => a + c.tasks.length, 0), [comms]);
   const doneTasks    = useMemo(() => comms.reduce((a, c) => a + c.tasks.filter(t => t.done).length, 0), [comms]);
   const activeCnt    = useMemo(() => comms.filter(c => c.status === "active").length, [comms]);
