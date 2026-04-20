@@ -18,9 +18,10 @@ const CH_META: Record<string, { ico: string; ar: string; bg: string; c: string; 
 };
 
 const ST_META: Record<string, { ar: string; c: string; bg: string; brd: string }> = {
-  ok:   { ar: "✓ وصل",   c: "#059669", bg: "#ECFDF5", brd: "#A7F3D0" },
-  part: { ar: "⚡ جزئي", c: "#B45309", bg: "#FFFBEB", brd: "#FCD34D" },
-  fail: { ar: "✗ فشل",   c: "#DC2626", bg: "#FEF2F2", brd: "#FCA5A5" },
+  ok:      { ar: "✓ وصل",       c: "#059669", bg: "#ECFDF5", brd: "#A7F3D0" },
+  part:    { ar: "⚡ جزئي",     c: "#B45309", bg: "#FFFBEB", brd: "#FCD34D" },
+  fail:    { ar: "✗ فشل",       c: "#DC2626", bg: "#FEF2F2", brd: "#FCA5A5" },
+  pending: { ar: "⏳ قيد الإرسال", c: "#2563EB", bg: "#EFF6FF", brd: "#BFDBFE" },
 };
 
 const SMS_PROVIDERS = [
@@ -128,18 +129,35 @@ export default function MessagesPage() {
 
   function normalizeHistory(arr: any[]) {
     return arr.map((m: any) => {
-      const sent = Number(m.recipients_sent ?? m.sent ?? 0);
-      const fail = Number(m.recipients_failed ?? m.failed ?? 0);
-      const cnt  = Number(m.recipients_total ?? m.cnt ?? sent + fail);
-      const st   = String(m.status ?? "").toLowerCase();
-      const status: "ok" | "part" | "fail" =
-        st === "fail" || st === "failed" || fail > 0 && sent === 0 ? "fail" :
-        fail > 0 ? "part" : "ok";
+      const cnt = Number(m.recipients_total ?? m.recipients ?? m.cnt ?? 0);
+      // الـ Backend بيرجع status كرقم: 1=pending, 2=sent, 3=failed
+      // و status_label كـ string: pending/sent/failed
+      const label = String(m.status_label ?? m.status ?? "").toLowerCase();
+      const raw   = m.status;
+
+      let status: "ok" | "part" | "fail" | "pending";
+      let sent = Number(m.recipients_sent ?? m.sent ?? 0);
+      let fail = Number(m.recipients_failed ?? m.failed ?? 0);
+
+      if (label === "failed" || label === "fail" || raw === 3) {
+        status = "fail";
+        fail = fail || cnt; sent = 0;
+      } else if (label === "sent" || raw === 2) {
+        status = "ok";
+        sent = sent || cnt; fail = 0;
+      } else if (label === "pending" || raw === 1) {
+        status = "pending";
+        sent = 0; fail = 0;
+      } else {
+        // fallback: نحسب من العدّادات لو موجودة
+        status = fail > 0 && sent === 0 ? "fail" : fail > 0 ? "part" : "ok";
+      }
+
       return {
         id:       String(m.id ?? crypto.randomUUID()),
         title:    m.title ?? (m.message_body ? m.message_body.slice(0, 60) : "—"),
         body:     m.message_body ?? m.body ?? "",
-        ch:       "sms", // force SMS-only for now
+        ch:       "sms",
         cnt, sent, failed: fail,
         cost:     Number(m.cost ?? 0),
         date:     m.date ?? (m.created_at ? String(m.created_at).slice(0, 10) : ""),
@@ -147,6 +165,7 @@ export default function MessagesPage() {
         status,
         auto:     Boolean(m.auto ?? m.type === "auto"),
         template: m.template ?? "",
+        errorMessage: m.error_message ?? "",
       };
     });
   }
